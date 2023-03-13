@@ -33,7 +33,7 @@ func ReadOptions() []string {
 	var optionsArray []string
 	var option string
 
-	fmt.Scanf("%s", option)
+	fmt.Scanf("%s", &option)
 
 	optionsArray = strings.Split(option, ",")
 
@@ -47,7 +47,19 @@ func RemoveOption(options []string, option string) []string {
 		return append(options[:index], options[index+1:]...)
 	}
 
-	return options
+	return nil
+}
+
+func BeatAndBeatenOptions(removed []string) ([]string, []string) {
+	var beat []string
+	var beaten []string
+	for i := 0; i < len(removed)/2; i++ {
+		beat = append(beat, removed[i])
+	}
+	for i := len(removed) / 2; i < len(removed); i++ {
+		beaten = append(beaten, removed[i])
+	}
+	return beat, beaten
 }
 
 func Read() string {
@@ -103,12 +115,10 @@ func main() {
 	var computer Computer
 
 	username := ReadName()
-	lines := ReadTxt()
 
-	user.Score = ShowScore(lines, username)
+	computerChose := ReadOptions()
+	fmt.Println("Okay, let's start")
 	for {
-
-		computerChose := ReadOptions()
 
 		random := rand.Intn(len(computerChose))
 
@@ -117,58 +127,32 @@ func main() {
 		user.Chose = userInput
 		user.Name = username
 
+		computer.Chose = computerChose[random]
+
+		removed := RemoveOption(computerChose, user.Chose)
+
+		beat, beaten := BeatAndBeatenOptions(removed)
+
+		_, okBeat := Contains(beat, computer.Chose)
+		_, okBeaten := Contains(beaten, computer.Chose)
+
 		switch userInput {
-		case "paper":
-			switch random {
-			case 0:
-				computer.Chose = computerChose[0]
-				fmt.Println("There is a draw (", computer.Chose, ")")
-				user.Score += 50
-
-			case 1:
-				computer.Chose = computerChose[1]
-				fmt.Println("Sorry, but the computer chose", computer.Chose)
-
-			case 2:
-				computer.Chose = computerChose[2]
-				fmt.Println("Well done. The computer chose", computer.Chose, "and failed")
-				user.Score += 100
-			}
-		case "scissors":
-			switch random {
-			case 0:
-				computer.Chose = computerChose[0]
-				fmt.Println("Well done. The computer chose", computer.Chose, "and failed")
-				user.Score += 100
-			case 1:
-				computer.Chose = computerChose[1]
-				fmt.Println("There is a draw (", computer.Chose, ")")
-				user.Score += 50
-			case 2:
-				computer.Chose = computerChose[2]
-				fmt.Println("Sorry, but the computer chose", computer.Chose)
-			}
-		case "rock":
-			switch random {
-			case 0:
-				computer.Chose = computerChose[0]
-				fmt.Println("Sorry, but the computer chose", computer.Chose)
-			case 1:
-				computer.Chose = computerChose[1]
-				fmt.Println("Well done. The computer chose", computer.Chose, "and failed")
-				user.Score += 100
-			case 2:
-				computer.Chose = computerChose[2]
-				fmt.Println("There is a draw (", computer.Chose, ")")
-				user.Score += 50
-			}
 		case "!rating":
 			fmt.Println("Your score:", user.Score)
 		case "!exit":
 			fmt.Println("Bye!")
-			return
 		default:
-			fmt.Println("Invalid input")
+			if okBeat {
+				fmt.Println("Sorry, but the computer chose", computer.Chose)
+			} else if okBeaten {
+				fmt.Println("Well done. The computer chose", computer.Chose, "and failed")
+				user.Score += 100
+			} else if computer.Chose == userInput {
+				fmt.Println("There is a draw (", computer.Chose, ")")
+				user.Score += 50
+			} else {
+				fmt.Println("Invalid input")
+			}
 		}
 	}
 
